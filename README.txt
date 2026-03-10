@@ -1,73 +1,94 @@
 # Folder Locker
 
-**Hassas verilerinizi askeri sınıf şifrelemeyle koruyun.**
+Klasörlerinizi AES-256-GCM şifreleme algoritmasıyla kilitleyen, masaüstü arayüzüne sahip bir dosya güvenlik aracı.
 
-Folder Locker, belirtilen bir dizin altındaki tüm dosyaları özyinelemeli olarak tarayıp **AES-256 (GCM modu)** ile şifreleyen, masaüstü tabanlı bir güvenlik aracıdır. Temel tasarım felsefesi, gigabaytlarca veriyi sistem kaynaklarını tüketmeden hızlı ve güvenli biçimde işlemektir.
+---
+
+## Genel Bakış
+
+Folder Locker, belirlediğiniz bir klasör içindeki tüm dosyaları güçlü bir şifreleme algoritmasıyla koruma altına almanızı sağlar. Şifre çözme işlemi yalnızca doğru parola ile mümkündür; yanlış parola girişlerinde veri bütünlüğü doğrulaması devreye girer ve dosyalar bozulmaktan korunur.
+
+Proje üç temel bileşenden oluşur: şifreleme motoru (`encryptor.py`), komut satırı arayüzü (`main.py`) ve masaüstü grafik arayüzü (`gui.py`).
 
 ---
 
 ## Özellikler
 
-- **AES-256-GCM Şifreleme** — Verinin hem şifrelenmesini hem de bütünlüğünü garanti altına alır
-- **Streaming Mimarisi** — Dosyalar 64 KB'lık bloklar halinde işlenerek bellek tüketimi minimize edilir
-- **PBKDF2 Anahtar Türetme** — SHA-256 ile 100.000 iterasyon; brute-force saldırılarına karşı güçlü koruma
-- **Çoklu İş Parçacığı (Multithreading)** — Şifreleme yükü ana döngüden izole edilerek arayüz donmaları engellenir
-- **Anlık İlerleme Takibi** — Segmentli ilerleme çubuğu ve canlı işlem günlüğü (log) ile şeffaf süreç yönetimi
+- AES-256 GCM modu ile kimlik doğrulamalı şifreleme
+- PBKDF2 anahtar türetme (100.000 iterasyon, SHA-256)
+- Veri bütünlüğü doğrulaması (GCM tag kontrolü)
+- 64 KB'lık akış tabanlı işleme ile büyük dosya desteği
+- Yinelemeli klasör tarama (alt klasörler dahil)
+- Segmentli ilerleme çubuğu ve gerçek zamanlı log ekranı
+- İşlem süresince UI'nin donmaması için arka plan iş parçacığı
 
 ---
 
 ## Gereksinimler
 
-- Python **3.8** veya üzeri
+- Python 3.8 veya üzeri
 - `pycryptodome`
 - `customtkinter`
 
----
+Bağımlılıkları yüklemek için:
 
-## Kurulum
-
-```bash
-pip install customtkinter pycryptodome
+```
+pip install pycryptodome customtkinter
 ```
 
 ---
 
 ## Kullanım
 
-### Uygulamayı Çalıştırma
+**Grafik arayüz ile:**
 
-```bash
+```
 python gui.py
 ```
 
-### Bağımsız Yürütülebilir Dosya Oluşturma (Windows)
+Açılan pencerede klasör yolunu seçin, parolanızı girin ve "Sifrele" ya da "Coz" butonuna tıklayın. İşlem tamamlandığında log ekranında sonuçları görebilirsiniz.
 
-```bash
-pyinstaller --noconsole --onefile --collect-all customtkinter --name "folder_locker" gui.py
+**Komut satırı ile:**
+
+```
+python main.py
 ```
 
-Bu komut, tüm bağımlılıkları tek bir pakette toplar. Oluşan `.exe` dosyası herhangi bir Python kurulumu gerektirmez.
+Sırasıyla klasör yolu, parola ve işlem türü (`e` şifrele / `d` çöz) girmeniz istenir.
 
 ---
 
 ## Mimari
 
-Uygulama üç katmandan oluşmaktadır:
+```
+folder-locker/
+├── encryptor.py    # AES-GCM şifreleme ve çözme motoru
+├── main.py         # Komut satırı arayüzü
+└── gui.py          # customtkinter tabanlı masaüstü arayüzü
+```
 
-| Katman | Sorumluluk |
-|---|---|
-| `FileEncryptor` | Anahtar türetme, AES-GCM şifreleme/çözme, dosya akışı yönetimi |
-| `FolderLockerApp` | CustomTkinter arayüzü, ilerleme çubuğu, log görüntüleme |
-| Thread Manager | Ağır işlemleri arka planda izole ederek UI tepkiselliğini korur |
+### encryptor.py
+
+`FileEncryptor` sınıfı, PBKDF2 ile paroladan bir 256-bit anahtar türetir. Şifreleme sırasında her dosya için rastgele bir `nonce` üretilir ve dosyanın başına yazılır. İşlem sonunda GCM `tag` değeri dosyanın sonuna eklenerek veri bütünlüğü güvence altına alınır.
+
+### main.py
+
+`process_folder()` fonksiyonu belirtilen klasörü yinelemeli olarak tarar. `.py`, `.git`, `.gitignore` uzantılı dosyalar ve `secret.key` işlem dışı bırakılır. Başarılı ve başarısız işlem sayıları ayrı ayrı raporlanır.
+
+### gui.py
+
+`FolderLockerApp` sınıfı, `customtkinter` ile dark tema üzerine inşa edilmiştir. Dosya işleme, `threading.Thread` ile arka planda yürütülür; UI güncellemeleri `self.after()` aracılığıyla ana iş parçacığına iletilir.
 
 ---
 
 ## Güvenlik Notları
 
-> **Dikkat:** Şifreleme sırasında kullanılan parola veya `salt` değeri kaybolursa veriler **geri döndürülemez biçimde kilitli kalır.** Parolanızı güvenli bir yerde saklayın.
+- Salt değeri sabit tanımlanmıştır. Daha yüksek güvenlik için her şifreleme işleminde rastgele salt üretilmesi ve dosyayla birlikte saklanması önerilir.
+- Parola bellekte `str` olarak tutulmaktadır. Kritik ortamlarda `SecureString` benzeri bir yaklaşım değerlendirilebilir.
+- Şifreli dosyalar aynı konuma, orijinal adla yazılır; orijinal içerik kalıcı olarak silinir.
 
 ---
 
-## Lisans
+## Yazar
 
-Bu proje [MIT Lisansı](LICENSE) kapsamında dağıtılmaktadır.
+Hakan Cem
