@@ -1,0 +1,15 @@
+# Python önbellek dosyaları
+__pycache__/
+*.py[cod]
+
+# Sanal ortam
+venv/
+.venv/
+
+# Hassas veriler (Şifreleme anahtarları)
+*.key
+secret.key
+
+# IDE dosyaları
+.vscode/
+.idea/
