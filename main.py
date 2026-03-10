@@ -2,7 +2,6 @@ import os
 from encryptor import FileEncryptor
 
 def process_folder(folder_path, password, mode='encrypt'):
-    # Klasör yolunun geçerli olup olmadığını kontrol et
     if not os.path.exists(folder_path):
         print("Hata: Belirtilen klasör yolu bulunamadı!")
         return 0, 0
@@ -13,7 +12,7 @@ def process_folder(folder_path, password, mode='encrypt'):
     
     for root, dirs, files in os.walk(folder_path):
         for file in files:
-            # Kritik dosyaları şifrelemeden atla
+            # Sistem ve kaynak dosyaları atlanır
             if file.endswith(('.py', '.git', '.gitignore')) or file == "secret.key":
                 continue
                 
@@ -46,12 +45,8 @@ if __name__ == "__main__":
         print("Geçersiz işlem seçildi!")
         exit()
 
-    # Sonuç Raporu
     if s_count > 0:
         print(f"\nBaşarılı: {s_count} dosya {status_text}.")
     
     if e_count > 0:
-        if action == 'd':
-            print(f"HATA: {e_count} dosya açılamadı! (Yanlış şifre veya dosya zaten açık olabilir)")
-        else:
-            print(f"HATA: {e_count} dosya işlenirken bir sorun oluştu.")
+        print(f"HATA: {e_count} dosya işlenemedi! (Şifre yanlış olabilir)")
