@@ -1,66 +1,48 @@
-# Folder Locker - Python Based File Encryption System
+# Folder Locker: Python tabanli Guvenli Dosya Sifreleme Sistemi
 
-Bu proje, yerel dizinlerde bulunan dosyaların AES-256 tabanlı Fernet algoritması kullanılarak bayt seviyesinde şifrelenmesini ve güvenli bir şekilde depolanmasını sağlayan bir masaüstü uygulamasıdır. Yazılım, hem komut satırı üzerinden hem de modern bir grafik kullanıcı arayüzü (GUI) üzerinden kontrol edilebilmektedir.
+Bu proje, yerel dizinlerdeki dosyalarin guvenligini saglamak amaciyla gelistirilmis, AES-256 (Fernet) standardini kullanan bir sifreleme cozumudur. Modern bir grafik arayuzu (GUI) ile teknik bilgisi olmayan kullanicilarin dahi verilerini kolayca koruma altina almasini saglar.
 
-## Teknik Genel Bakış
+## Proje Hakkinda
 
-Sistem, cryptography kütüphanesinin PBKDF2 (Password-Based Key Derivation Function 2) ve HMAC (Hash-based Message Authentication Code) protokollerini temel alır. Kullanıcı tarafından girilen düz metin şifre, SHA-256 algoritması ve sabit bir tuz (salt) değeri ile 100.000 iterasyon boyunca işlenerek 32 baytlık güvenli bir anahtara dönüştürülür.
+Folder Locker, hassas verilerin (fotograflar, belgeler, notlar vb.) yetkisiz erisime karsi bayt seviyesinde karistirilmasi mantigiyla calisir. Uygulama, acik kaynakli ve guvenilirligi kanitlanmis kriptografik standartlari temel alir.
 
-### Temel Özellikler
+### Teknik Ozellikler
 
-1. Veri Bütünlüğü Koruması: Şifreleme sırasında verinin bozulmasını veya yanlış anahtarla açılmaya çalışıldığında kalıcı hasar görmesini engelleyen kontrol mekanizması mevcuttur.
-2. Otomatik Dosya Filtreleme: Uygulama; .py (kaynak kodlar), .git (versiyon kontrol verileri) ve .gitignore gibi kritik dosyaları otomatik olarak tespit ederek şifreleme süreci dışında bırakır.
-3. Modern Kullanıcı Arayüzü: CustomTkinter kütüphanesi kullanılarak geliştirilen arayüz, karanlık mod desteği ve kullanıcı dostu bir deneyim sunar.
-4. Alt Dizin Desteği: Seçilen ana klasörün içindeki tüm alt klasörler recursive (özyinelemeli) olarak taranır ve hiyerarşi korunarak işlem yapılır.
+* Sifreleme Standarti: AES-256 tabanli Fernet (Symmetric Encryption).
+* Anahtar Turetimi: PBKDF2HMAC algoritmasi ile kullanici sifresinden guvenli anahtar uretimi.
+* Arayuz: CustomTkinter kutuphanesi ile modern, karanlik mod uyumlu masaustu deneyimi.
+* Dosya Koruma: Sifreleme sirasinda .py, .git ve .gitignore gibi kritik sistem dosyalarinin otomatik olarak haric tutulmasi.
+* Hata Yonetimi: Yanlis sifre girildiginde verinin bozulmasini onleyen dogrulama mekanizmasi.
 
+## Kurulum ve Gereksinimler
 
+Projenin calismasi icin sisteminizde Python 3.10 veya uzeri bir surumun yuklu olmasi onerilir.
 
-## Kurulum ve Hazırlık
+### Bagimliliklarin Yuklenmesi
 
-Uygulamanın çalışması için sisteminizde Python 3.x yüklü olmalıdır. Gerekli kütüphaneleri yüklemek için aşağıdaki komutu çalıştırın:
+Terminal veya komut istemcisi uzerinden gerekli kutuphaneleri asagidaki komutla yukleyebilirsiniz:
 
-```bash
 pip install cryptography customtkinter
 
-Proje Yapısı
+### Uygulamanin Baslatilmasi
 
-    encryptor.py: Şifreleme motoru ve anahtar üretim mantığını içeren çekirdek dosya.
+Gerekli kutuphaneler yuklendikten sonra ana dizin icerisinde su komutu calistirin:
 
-    main.py: Komut satırı (CLI) üzerinden işlem yapmayı sağlayan kontrolcü.
+python gui.py
 
-    gui.py: Grafik kullanıcı arayüzünü başlatan ana uygulama dosyası.
+## Kullanim Kilavuzu
 
-    .gitignore: Hassas anahtar dosyalarının uzak sunucuya yüklenmesini engelleyen konfigürasyon.
+1. Uygulama acildiginda "Klasor Sec" butonu ile sifrelemek istediginiz dizini belirleyin.
+2. Belirlediginiz guclu bir sifreyi ilgili alana girin.
+3. Sifreleme islemi icin "SIFRELE" butonuna basin. Bu asamadan sonra dosyalariniz bayt seviyesinde degistirilecek ve orijinal formatlarinda acilamaz hale gelecektir.
+4. Dosyalari tekrar erisilebilir hale getirmek icin ayni klasoru secip, ayni sifreyi girerek "COZ" butonuna tiklayin.
 
-Kullanım Talimatları
-Grafik Arayüzü ile Kullanım (Önerilen)
+## Guvenlik Bildirimi ve Uyari
 
-    gui.py dosyasını çalıştırın: python gui.py
+* Salt Degeri: Proje icerisinde kullanilan salt (tuz) degeri `encryptor.py` dosyasinda sabitlenmistir. Bu degerin degistirilmesi, mevcut sifreli dosyalarin bir daha asla acilamamasina neden olur.
+* Sifre Hatirlatma: Sifrenizi unutmaniz durumunda verilerinizi geri dondurmenin bir yolu bulunmamaktadir.
+* Git Korunumu: `.gitignore` dosyasi sayesinde gizli anahtar dosyalarinin GitHub gibi platformlara yuklenmesi engellenmistir.
 
-    "Klasör Seç" butonu ile şifrelemek istediğiniz dizini belirleyin.
+## Lisans
 
-    Güçlü bir şifre belirleyin ve ilgili alana girin.
-
-    "ŞİFRELE" butonu ile süreci başlatın.
-
-    Dosyaları geri döndürmek için aynı klasörü seçip aynı şifreyle "ÇÖZ" butonuna basın.
-
-Komut Satırı ile Kullanım
-
-    main.py dosyasını çalıştırın: python main.py
-
-    Ekranda istenen klasör yolunu tam dizin olarak girin.
-
-    Yapmak istediğiniz işlemi (e: şifrele / d: çöz) karakter olarak girin.
-
-Güvenlik Uyarıları
-
-    Salt Değeri: encryptor.py içerisinde tanımlanan salt değeri, anahtarın benzersizliğini sağlar. Bu değerin değiştirilmesi, mevcut şifreli dosyaların bir daha asla açılamamasına neden olur.
-
-    Şifre Unutma: Uygulama, girilen şifreleri herhangi bir veritabanında saklamaz. Şifrenin unutulması durumunda veriye erişim mümkün değildir.
-
-    Yedekleme: Kritik veriler üzerinde işlem yapmadan önce verilerin bir kopyasının yedeklenmesi tavsiye edilir.
-
-Geliştirici Bilgileri
-
-Bu yazılım Hakan Cem Gerçek tarafından backend geliştirme ve kriptografi pratikleri kapsamında eğitim amaçlı tasarlanmıştır.
+Bu proje egitim ve kisisel kullanim amaciyla gelistirilmistir. Yazilim oldugu gibi sunulmakta olup, veri kaybi veya unutulan sifrelerden kaynakli sorumluluk kullaniciya aittir.
