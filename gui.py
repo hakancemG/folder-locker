@@ -1,3 +1,9 @@
+# ==========================================
+# Proje: Folder Locker - Grafik Arayuz (GUI)
+# Gelistirici: Hakan Cem Gercek
+# Versiyon: 1.0
+# ==========================================
+
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from encryptor import FileEncryptor

@@ -1,3 +1,9 @@
+# ==========================================
+# Proje: Folder Locker - Sifreleme Motoru
+# Gelistirici: Hakan Cem Gercek
+# Tarih: Mart 2026
+# ==========================================
+
 import os
 import base64
 from cryptography.fernet import Fernet
