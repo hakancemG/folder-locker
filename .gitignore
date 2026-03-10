@@ -9,7 +9,3 @@ venv/
 # Hassas veriler (Şifreleme anahtarları)
 *.key
 secret.key
-
-# IDE dosyaları
-.vscode/
-.idea/
