@@ -49,4 +49,4 @@ if __name__ == "__main__":
         print(f"\nBaşarılı: {s_count} dosya {status_text}.")
     
     if e_count > 0:
-        print(f"HATA: {e_count} dosya işlenemedi! (Şifre yanlış olabilir)")
+        print(f"HATA: {e_count} dosya işlenemedi! (Şifre yanlış olabilir!)")
