@@ -1,39 +1,84 @@
-import os
-from Crypto.Cipher import AES
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Hash import SHA256
+# Folder Locker
 
-class FileEncryptor:
-    def __init__(self, password: str):
-        self.password = password
-        self.salt = b'\x14\xef\xaa\x11\x92\x87\x10\x01' # Mevcut salt değerin
-        self.key = PBKDF2(password, self.salt, dkLen=32, count=100000, hmac_hash_module=SHA256)
+AES-256 tabanlı dosya şifreleme ve çözme uygulaması. Yerel dizinlerde saklanan kişisel ve hassas verileri korumak için geliştirilmiştir.
 
-    def encrypt_file(self, file_path: str):
-        cipher = AES.new(self.key, AES.MODE_GCM)
-        temp_file = file_path + ".enc"
-        
-        with open(file_path, 'rb') as f_in, open(temp_file, 'wb') as f_out:
-            # GCM modu için 'nonce' (başlangıç vektörü) dosyanın başına yazılır
-            f_out.write(cipher.nonce)
-            while chunk := f_in.read(64 * 1024): # 64KB'lık parçalarla oku
-                f_out.write(cipher.encrypt(chunk))
-            
-            # Veri bütünlüğü için 'tag' eklenir
-            tag = cipher.digest()
-            f_out.write(tag)
-            
-        os.replace(temp_file, file_path)
+---
 
-    def decrypt_file(self, file_path: str):
-        with open(file_path, 'rb') as f_in:
-            nonce = f_in.read(16) # İlk 16 bayt nonce
-            file_data = f_in.read()
-            tag = file_data[-16:] # Son 16 bayt tag
-            ciphertext = file_data[:-16]
+## Genel Bakış
 
-        cipher = AES.new(self.key, AES.MODE_GCM, nonce=nonce)
-        decrypted_data = cipher.decrypt_and_verify(ciphertext, tag)
-        
-        with open(file_path, 'wb') as f_out:
-            f_out.write(decrypted_data)
+Folder Locker, seçilen bir klasördeki tüm dosyaları AES-GCM kullanarak şifreler. AES-GCM, mevcut simetrik şifreleme modları arasında en güvenli olanlardan biridir. Şifreleme anahtarı, kullanıcının girdiği paroladan PBKDF2-SHA256 algoritması ile 100.000 iterasyon uygulanarak türetilir; bu da kaba kuvvet saldırılarını hesaplama maliyeti açısından son derece zorlaştırır.
+
+Uygulama hem grafiksel arayüz (GUI) hem de komut satırı arayüzü (CLI) ile birlikte gelir.
+
+---
+
+## Özellikler
+
+- AES-256-GCM şifreleme ve kimlik doğrulamalı bütünlük doğrulama
+- PBKDF2-SHA256 ile parola tabanlı anahtar türetme
+- Özyinelemeli klasör işleme — alt dizinlerdeki tüm dosyalar dahil edilir
+- Gerçek zamanlı ilerleme çubuğu ve dosya bazlı işlem logu
+- Çok iş parçacıklı yapı — uzun işlemler sırasında GUI donmaz
+- Hem GUI (`gui.py`) hem de CLI (`main.py`) giriş noktaları
+
+---
+
+## Proje Yapısı
+
+```
+folder-locker/
+├── encryptor.py   # Çekirdek şifreleme/çözme motoru
+├── main.py        # Komut satırı arayüzü
+└── gui.py         # Grafiksel kullanıcı arayüzü (CustomTkinter)
+```
+
+---
+
+## Gereksinimler
+
+- Python 3.8 veya üstü
+- pycryptodome
+- customtkinter
+
+Bağımlılıkları yüklemek için:
+
+```
+pip install pycryptodome customtkinter
+```
+
+---
+
+## Kullanım
+
+**Grafiksel Arayüz**
+
+```
+python gui.py
+```
+
+1. "Seç" butonuna tıklayarak hedef klasörü seçin.
+2. Parolanızı girin.
+3. Şifrelemek için "ŞİFRELE", çözmek için "ÇÖZ" butonuna tıklayın.
+
+**Komut Satırı Arayüzü**
+
+```
+python main.py
+```
+
+Klasör yolu, parola ve işlem türünü (`e` şifrele / `d` çöz) girmek için yönergeleri takip edin.
+
+---
+
+## Güvenlik Notları
+
+- Şifreleme ve çözme işlemlerinde aynı parola kullanılmalıdır. Parola kurtarma mekanizması bulunmamaktadır.
+- Her dosya, rastgele üretilen benzersiz bir nonce ile şifrelenir. Bu sayede aynı dosya iki kez şifrelendiğinde farklı şifreli metin üretilir.
+- GCM kimlik doğrulama etiketi her şifreli dosyanın sonuna eklenir; çözme sırasında dosyanın değiştirilip değiştirilmediği bu sayede tespit edilir.
+- `.py`, `.git` ve `.gitignore` uzantılı dosyalar işlem dışı bırakılır; bu sayede uygulamanın kendi dosyaları yanlışlıkla bozulmaz.
+
+---
+
+## Geliştirici
+
+Hakan Cem Gerçek
